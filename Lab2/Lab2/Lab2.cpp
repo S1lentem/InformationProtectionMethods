@@ -3,11 +3,75 @@
 #include <iostream>
 #include <iomanip> 
 
-#define KEY "12345678"
 #define BITE_SIZE 8
-#define BLOCK_SIZE 128
+#define MESSAGE_BLOCK_SIZE 128
+#define KEY_BLOCK_SIZE 256
 
 #define SYMBOL_FOR_END_STRING "0";
+
+class Key {
+private:
+	char* k1 = new char[4];
+	char* k2 = new char[4];
+	char* k3 = new char[4];
+	char* k4 = new char[4];
+	char* k5 = new char[4];
+	char* k6 = new char[4];
+	char* k7 = new char[4];
+	char* k8 = new char[4];
+
+	char* keys[8] = { k1, k2, k3, k4, k5, k6, k7, k8 };
+
+public:
+	Key(std::string key) {
+		const char* bytes = key.c_str();
+
+		char j = 0;
+		for (char i = 0; i < 4; i++, j++) {
+			k1[i] = bytes[j];
+		}
+		for (char i = 0; i < 4; i++, j++) {
+			k2[i] = bytes[j];
+		}
+		for (char i = 0; i < 4; i++, j++) {
+			k3[i] = bytes[j];
+		}
+		for (char i = 0; i < 4; i++, j++) {
+			k4[i] = bytes[j];
+		}
+		for (char i = 0; i < 4; i++, j++) {
+			k5[i] = bytes[j];
+		}
+		for (char i = 0; i < 4; i++, j++) {
+			k6[i] = bytes[j];
+		}
+		for (char i = 0; i < 4; i++, j++) {
+			k7[i] = bytes[j];
+		}
+		for (char i = 0; i < 4; i++, j++) {
+			k8[i] = bytes[j];
+		}
+	}
+
+	~Key() {
+		delete[] k1;
+		delete[] k2;
+		delete[] k3;
+		delete[] k4;
+		delete[] k5;
+		delete[] k6;
+		delete[] k7;
+		delete[] k8;
+	}
+	 
+	char* operator[] (int index) {
+		return keys[index];
+	}
+
+	char* GetBlock(int index) {
+		return keys[index];
+	}
+};
 
 int S[0x10][0x10] = {
 	{0xB1, 0x94, 0xBA, 0xC8, 0x0A, 0x08, 0xF5, 0x3B, 0x36, 0x6D, 0x00, 0x8E, 0x58, 0x4A, 0x5D, 0xE4},
@@ -28,10 +92,10 @@ int S[0x10][0x10] = {
 	{0xD4, 0xEF, 0xD9, 0xB4, 0x3A, 0x62, 0x28, 0x75, 0x91, 0x14, 0x10, 0xEA, 0x77, 0x6C, 0xDA, 0x1D}
 };
 
-std::string ComplementLeft(std::string str) {
+std::string ComplementLeft(std::string str, int size) {
 	std::string newString = std::string(str);
 	int bitCount = str.length() * BITE_SIZE;
-	int len = (bitCount + BLOCK_SIZE - bitCount % BLOCK_SIZE) / BITE_SIZE;
+	int len = (bitCount + size - bitCount % size) / BITE_SIZE;
 
 	while (newString.length() != len) {
 		newString += SYMBOL_FOR_END_STRING;
@@ -40,28 +104,63 @@ std::string ComplementLeft(std::string str) {
 	return newString;
 }
 
-void temp(std::string message, std::string key) {
-	const char* str = message.c_str();
-	const char* key = key.c_str();
-	
-	const char* a = str;
-	const char* b = str + (char)4;
-	const char* c = str + (char)8;
-	const char* d = str + (char)12;
 
+char* XOR(char* first_str, char* second_str, int len) {
+	char *result = new char[len];
+	for (char i = 0; i < len; i++) {
+		result[i] = first_str[i] ^ second_str[i];
+	}
+	return result;
+}
+
+void Encrypte(std::string message, std::string key_s) {
+	const char* bytes = message.c_str();
+	char* a = new char[4];
+	char* b = new char[4];
+	char* c = new char[4];
+	char* d = new char[4];
 	
+
+	Key *key = new Key(key_s);
+
+	char j = 0;
+	for (char i = 0; i < 4; i++, j++) {
+		a[i] = bytes[j];
+	}
+	for (char i = 0; i < 4; i++, j++) {
+		b[i] = bytes[j];
+	}
+	for (char i = 0; i < 4; i++, j++) {
+		c[i] = bytes[j];
+	}
+	for (char i = 0; i < 4; i++, j++) {
+		d[i] = bytes[j];
+	}
+
+
+	for (int i = 1; i <= 8; i++) {
+		char* currentKey = key->GetBlock(7 * i - 6);
+		char* temp = XOR(a, currentKey, 4);
+
+		break;
+	}
+
+
+	delete[] a;
+	delete[] b;
+	delete[] c;
+	delete[] d;
 }
 
 
 
 int main()
 {
-	std::string message = "BSUIR 135";
-	std::string key = std::string(KEY);
+	std::string message = ComplementLeft("BSUIR 135", MESSAGE_BLOCK_SIZE);
+	std::string key_s = ComplementLeft("12345678", KEY_BLOCK_SIZE);
 
-	message = ComplementLeft(message);
 
-	temp(message.c_str(), key);
+	Encrypte(message, key_s);
 
 	std::cout << message << std::endl;
 }
