@@ -4,10 +4,66 @@
 #include <iomanip> 
 
 #define KEY "12345678"
+#define BLOCK_ITEM_COUNT 4
+#define	BLOCK_ITEM_SIZE 4
 #define BITE_SIZE 8
 #define BLOCK_SIZE 128
 
 #define SYMBOL_FOR_END_STRING "0";
+
+char* XOR(char* first, char* second, int size=BLOCK_ITEM_SIZE) {
+	for (int i = 0; i < size; i++) {
+		first[i] ^= second[i];
+	}
+	return first;
+}
+
+class BlockContainer {
+private :
+	char** values;
+	int blockCount;
+	int blockSize;
+
+public:
+	BlockContainer(std::string str, int blockCount, int blockSize) {
+		this->blockCount = blockCount;
+		this->blockSize = blockSize;
+		
+		values = new char* [blockCount];
+
+		const char *bytes = str.c_str();
+		for (int i = 0, k = 0; i < blockCount; i++) {
+			values[i] = new char[blockSize];
+			for (int j = 0; j < blockSize; j++, k++) {
+				values[i][j] = bytes[k];
+			}
+		}
+	}
+
+	~BlockContainer()
+	{
+		for (int i = 0; i < BLOCK_ITEM_COUNT; i++) {
+			delete values[i];
+		}
+		delete values;
+	}
+
+	char* Get(int index) {
+		return values[index];
+	}
+
+	std::string GetString() {
+		std::string result = std::string(blockCount * blockSize, 'x');
+		for (int i = 0, k = 0; i < blockCount; i++) {
+			for (int j = 0; j < blockSize; j++, k++) {
+				result[k] = values[i][j];
+			}
+		}
+
+		return result;
+	}
+};
+
 
 int S[0x10][0x10] = {
 	{0xB1, 0x94, 0xBA, 0xC8, 0x0A, 0x08, 0xF5, 0x3B, 0x36, 0x6D, 0x00, 0x8E, 0x58, 0x4A, 0x5D, 0xE4},
@@ -28,10 +84,10 @@ int S[0x10][0x10] = {
 	{0xD4, 0xEF, 0xD9, 0xB4, 0x3A, 0x62, 0x28, 0x75, 0x91, 0x14, 0x10, 0xEA, 0x77, 0x6C, 0xDA, 0x1D}
 };
 
-std::string ComplementLeft(std::string str) {
+std::string ComplementLeft(std::string str, int size) {
 	std::string newString = std::string(str);
 	int bitCount = str.length() * BITE_SIZE;
-	int len = (bitCount + BLOCK_SIZE - bitCount % BLOCK_SIZE) / BITE_SIZE;
+	int len = (bitCount + size - bitCount % size) / BITE_SIZE;
 
 	while (newString.length() != len) {
 		newString += SYMBOL_FOR_END_STRING;
@@ -41,29 +97,28 @@ std::string ComplementLeft(std::string str) {
 }
 
 void temp(std::string message, std::string key) {
-	const char* str = message.c_str();
-	const char* key = key.c_str();
 	
-	const char* a = str;
-	const char* b = str + (char)4;
-	const char* c = str + (char)8;
-	const char* d = str + (char)12;
+	BlockContainer* messageContainer = new BlockContainer(message, BLOCK_ITEM_COUNT, BLOCK_ITEM_SIZE);
+	BlockContainer* keyContainer = new BlockContainer(key, BLOCK_ITEM_COUNT * 2, BLOCK_ITEM_SIZE);
 
-	
+	XOR(messageContainer->Get(0), messageContainer->Get(1));
+	XOR(keyContainer->Get(0), keyContainer->Get(7));
+
+	std::cout << messageContainer->GetString() << std::endl;
+	std::cout << keyContainer->GetString() << std::endl;
 }
 
 
 
 int main()
 {
-	std::string message = "BSUIR 135";
-	std::string key = std::string(KEY);
-
-	message = ComplementLeft(message);
-
-	temp(message.c_str(), key);
+	std::string key = ComplementLeft(KEY, BLOCK_SIZE*2);
+    std::string message = ComplementLeft("BSUIR 135", BLOCK_SIZE);
 
 	std::cout << message << std::endl;
+
+	temp(message, key);
+
 }
 
 
