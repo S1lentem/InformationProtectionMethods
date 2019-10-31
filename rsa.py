@@ -7,10 +7,7 @@ LOGGER = get_logger('RSA', 'DEBUG')
 
 
 def extended_gcd(a, b):
-    x = 0
-    y = 1
-    lx = 1
-    ly = 0
+    x, y, lx, ly = 0, 1, 1, 0
     oa = a
     ob = b
     while b != 0:   
