@@ -155,9 +155,9 @@ std::bitset<128> f(const std::bitset<128>& x, const std::bitset<256>& tetta) {
 		d = d.to_ulong() + G(c.to_ulong() + keys[(7 * i - 3) % 8].to_ulong(), 13).to_ulong();
 		b ^= G(a.to_ulong() + keys[(7 * i - 2) % 8].to_ulong(), 21);
 		c ^= G(d.to_ulong() + keys[(7 * i - 1) % 8].to_ulong(), 5);
-		swap(a, b);
-		swap(c, d);
-		swap(b, c);
+		std::swap(a, b);
+		std::swap(c, d);
+		std::swap(b, c);
 	}
 	for (int i = 0; i < 32; i++) {
 		y[i] = b[i];
@@ -193,9 +193,9 @@ std::bitset<128> F_1(const std::bitset<128>& x, const std::bitset<256>& tetta) {
 		d = d.to_ulong() + G(c.to_ulong() + keys[(7 * i - 5) % 8].to_ulong(), 13).to_ulong();
 		b ^= G(a.to_ulong() + keys[(7 * i - 6) % 8].to_ulong(), 21);
 		c ^= G(d.to_ulong() + keys[(7 * i - 7) % 8].to_ulong(), 5);
-		swap(a, b);
-		swap(c, d);
-		swap(a, d);
+		std::swap(a, b);
+		std::swap(c, d);
+		std::swap(a, d);
 	}
 	std::bitset<128> y;
 	for (auto i = 0; i < 32; i++) {
