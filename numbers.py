@@ -21,7 +21,6 @@ def get_prime_nmber(max_value=10000):
     while result is None or not is_prime(result):
         result = randint(10, max_value)
 
-
     return result
 
 def get_prmitive_root(p):

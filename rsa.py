@@ -5,7 +5,6 @@ from logger import get_logger
 
 LOGGER = get_logger('RSA', 'DEBUG')
 
-
 def extended_gcd(a, b):
     x, y, lx, ly = 0, 1, 1, 0
     oa = a
@@ -23,13 +22,13 @@ def extended_gcd(a, b):
 
 
 def find_p_q():
-    p = get_prime_nmber(1000)
-    q = get_prime_nmber(1000)
+    p, q = get_prime_nmber(1000), None
 
-    while p == q:
+    while q is None or p == q:
         q = get_prime_nmber(1000)
 
     return max(p, q), min(p, q)
+
 
 def generate_keypair(p, q):
     n = p * q
@@ -38,24 +37,23 @@ def generate_keypair(p, q):
 
     while True:
         e = random.randrange(1, phi)
-        g = gcd(e, phi)
-        if g == 1:
+        if gcd(e, phi) == 1:
             break
 
     d = extended_gcd(e, phi)[1]
     
     return ((e, n), (d, n))
 
+
 def encrypt(pk, plaintext):
     e, n = pk
-    #a^e mod n
     cipher = [(ord(char) ** e) % n for char in plaintext]
 
     return cipher
 
+
 def decrypt(pk, ciphertext):
     d, n = pk
-    #a^d mod n
     plain = [chr((char ** d) % n) for char in ciphertext]
 
     return ''.join(plain)
