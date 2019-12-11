@@ -21,7 +21,7 @@ def create_mask(degree):
     text_mask = 0b11111111
     img_mask = 0b11111111
 
-    text_mask <<= (8 // degree)
+    text_mask <<= (8 - degree)
     text_mask %= 256
     img_mask >>= degree
     img_mask <<= degree
@@ -31,9 +31,7 @@ def create_mask(degree):
 
 
 def decrypt(degree, to_read):
-    img_len = os.stat(ENCODED_IMG_FILE_NAME).st_size
-
-    if to_read >= img_len * degree /8 - 54:
+    if to_read >= os.stat(ENCODED_IMG_FILE_NAME).st_size * degree /8 - 54:
         print('To long text')
         return
 
@@ -45,8 +43,7 @@ def decrypt(degree, to_read):
     _, img_mask = create_mask(degree)
     img_mask = ~img_mask
 
-    read = 0
-    while read < to_read:
+    while to_read >= 0:
         symbol = 0
 
         for _ in range(0, 8, degree):
@@ -54,7 +51,7 @@ def decrypt(degree, to_read):
             symbol <<= degree
             symbol |= img_byte
 
-        read += 1
+        to_read -= 1
         text.write(chr(symbol))
 
     text.close()

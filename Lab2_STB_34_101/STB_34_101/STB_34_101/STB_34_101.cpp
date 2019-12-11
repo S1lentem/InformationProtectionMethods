@@ -234,64 +234,6 @@ std::string simple_replace(
 	return res;
 }
 
-std::string concanate_block_encrypt(
-	const std::string& text,
-	std::bitset<256>& key, std::bitset<128>& s,
-	std::bitset<128>(*fun)(const std::bitset<128>&, const std::bitset<256>&))
-{
-	const int n = (text.size() + 15) / 16;
-	std::string res;
-	auto n_shift = 0;
-	int m = text.size() % 16;
-	if (m) n_shift = -2;
-	auto y = s;
-	for (auto i = 0; i < n + n_shift; i++) {
-		y = fun(string_to_set<128>(text.substr(i * 16, 16)) ^ y, key);
-		res += set_to_string(y);
-	}
-	if (n_shift == -2) {
-		std::bitset<128> r, x_n;
-		r = fun(string_to_set<128>(text.substr((n - 2) * 16, 16)) ^ y, key);
-		x_n = string_to_set<128>(text.substr((n - 1) * 16));
-		x_n = fun(x_n ^ r, key);
-		res += set_to_string(x_n);
-		res += set_to_string(r, m);
-	}
-	return res;
-}
-
-std::string concanate_block_decrypt(
-	const std::string& text,
-	std::bitset<256>& key, std::bitset<128>& s,
-	std::bitset<128>(*fun)(const std::bitset<128>&, const std::bitset<256>&))
-{
-	const int n = (text.size() + 15) / 16;
-	std::string res;
-	auto n_shift = 0;
-	int m = text.size() % 16;
-	if (m) n_shift = -2;
-	std::bitset<128> y;
-	std::bitset<128> x = s, x1;
-	for (auto i = 0; i < n + n_shift; i++) {
-		x1 = string_to_set<128>(text.substr(i * 16, 16));
-		y = fun(x1, key) ^ x;
-		res += set_to_string(y);
-		x = x1;
-	}
-	if (n_shift == -2) {
-		std::bitset<128> r, x_n;
-		x1 = string_to_set<128>(text.substr((n - 2) * 16, 16));
-		x_n = string_to_set<128>(text.substr((n - 1) * 16));
-		r = fun(x1, key) ^ x_n;
-		for (auto i = m * 8; i < 128; i++)
-			x_n[i] = r[i];
-		x_n = fun(x_n, key) ^ x1;
-		res += set_to_string(x_n);
-		res += set_to_string(r, m);
-	}
-	return res;
-}
-
 std::string gamming_encrypt(
 	const std::string& text,
 	std::bitset<256>& key, std::bitset<128>& s,
@@ -397,17 +339,6 @@ int main() {
 		std::cout << std::hex << int(static_cast<unsigned char>(i));
 	}
 	std::cout << std::endl << result << std::endl << std::endl << std::endl;
-	
-	
-	output_text = simple_replace(input_text, t, f);
-	result = simple_replace(output_text, t, F_1);
-	std::cout << input_text << std::endl;
-	for (auto i : output_text)
-	{
-		std::cout << std::hex << int(static_cast<unsigned char>(i));
-	}
-	std::cout << std::endl << result << std::endl << std::endl << std::endl;
-
 
 	output_text = gamming_encrypt(input_text, t, s, f);
 	result = gamming_decrypt(output_text, t, s, f);
@@ -418,11 +349,5 @@ int main() {
 	}
 	std::cout << std::endl << result << std::endl << std::endl << std::endl;
 
-	output_text = counter(input_text, t, s, f);
-	std::cout << input_text << std::endl;
-	for (auto i : output_text)
-	{
-		std::cout << std::hex << int(static_cast<unsigned char>(i));
-	}
 	return 0;
 }
